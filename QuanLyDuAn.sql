@@ -1,4 +1,4 @@
-﻿-- Tạo database
+﻿	-- Tạo database
 CREATE DATABASE QuanLyDuAn;
 USE QuanLyDuAn;
 go
@@ -6,13 +6,12 @@ go
 
 -- unique là không cho các giá trị trong cột trùng lặp
 -- decimal là giới hạn số trước dấu phẩy và sau dấu phẩy ví dụ decimal(10,2) thì nhập số 1000,2345 vô nó sẽ thành 1000,23
-
 -- Tạo bảng vai trò
 CREATE TABLE VAITRO (
     ma_vai_tro VARCHAR(20) NOT NULL PRIMARY KEY,
     ten_vai_tro NVARCHAR(255) NOT NULL
 );
-
+select * from QUANLY
 CREATE TABLE QUANLY
 (
 	ma_quan_ly varchar(5) primary key,
@@ -40,8 +39,14 @@ ADD ghi_chu NVARCHAR(MAX);
 ALTER TABLE CHUYENKHOA
 ALTER COLUMN so_luong INT NULL;
 
+CREATE TABLE TRIEUCHUNG (
+    ma_trieu_chung int identity(1,1) NOT NULL PRIMARY KEY,
+    ten_trieu_chung NVARCHAR(255) NOT NULL,
+    ma_chuyen_khoa VARCHAR(20) NOT NULL,
+    FOREIGN KEY (ma_chuyen_khoa) REFERENCES CHUYENKHOA(ma_chuyen_khoa)
+);
 
-select * from BACSI
+select * from chuyenkhoa
 
 CREATE TABLE BACSI (
     ma_bac_si VARCHAR(20) NOT NULL PRIMARY KEY,
@@ -105,7 +110,7 @@ CREATE TABLE LICHKHAM (
     ma_chuyen_khoa VARCHAR(20) NOT NULL,
 	ma_bac_si varchar(20) NULL,
     ngay_kham DATE NOT NULL,
-    gio_kham TIME  NOT NULL,
+    gio_kham TIME(0) NOT NULL DEFAULT '00:00:00',
     trang_thai NVARCHAR(50) NOT NULL,
     ghi_chu NVARCHAR(255) NOT NULL,
     FOREIGN KEY (ma_benh_nhan) REFERENCES BENHNHAN(ma_benh_nhan),
@@ -114,11 +119,19 @@ CREATE TABLE LICHKHAM (
 	FOREIGN KEY (ma_bac_si) REFERENCES BACSI(ma_bac_si),
 );
 
+/*ALTER TABLE LICHKHAM
+DROP CONSTRAINT DF__LICHKHAM__gio_kh__01142BA1;
+ALTER TABLE LICHKHAM
+DROP COLUMN gio_kham;
+ALTER TABLE LICHKHAM*/
+ALTER TABLE LICHKHAM
+ADD da_thanh_toan BIT DEFAULT 0;
 select * from LICHKHAM
 
 SELECT COLUMN_NAME 
 FROM INFORMATION_SCHEMA.COLUMNS 
 WHERE TABLE_NAME = 'BENHAN';
+
 
 
 ALTER TABLE BENHAN
@@ -214,18 +227,20 @@ CREATE TABLE CHITIETDONTHUOC (
     FOREIGN KEY (ma_don_thuoc) REFERENCES DONTHUOC(ma_don_thuoc) ON DELETE CASCADE,
     FOREIGN KEY (ma_thuoc) REFERENCES THUOC(ma_thuoc) ON DELETE CASCADE
 );
-
+drop table HOADON_DONTHUOC
 -- Bảng HÓA ĐƠN
 CREATE TABLE HOADON_DONTHUOC (
     ma_hoa_don INT IDENTITY(1,1) PRIMARY KEY,
-	ma_benh_nhan INT NOT NULL,
     ngay_thanh_toan DATE NOT NULL DEFAULT GETDATE(),
     hinh_thuc NVARCHAR(100) NOT NULL,
+	ma_don_thuoc INT NOT NULL,
     trang_thai NVARCHAR(50) NOT NULL,
-	FOREIGN KEY (ma_benh_nhan) REFERENCES BENHNHAN(ma_benh_nhan) ON DELETE CASCADE
+	tong_tien DECIMAL(10,2) NOT NULL CHECK (tong_tien >= 0),
+	FOREIGN KEY (ma_don_thuoc) REFERENCES DONTHUOC(ma_don_thuoc) ON DELETE CASCADE
 );
 
 -- Bảng CHI TIẾT HÓA ĐƠN ĐƠN THUỐC (Quan hệ nhiều - nhiều giữa HÓA ĐƠN và ĐƠN THUỐC)
+/*
 CREATE TABLE HOADON_CHITIET_DONTHUOC (
     ma_chi_tiet_hd INT IDENTITY(1,1) PRIMARY KEY,
     ma_hoa_don INT NOT NULL,
@@ -234,22 +249,7 @@ CREATE TABLE HOADON_CHITIET_DONTHUOC (
     FOREIGN KEY (ma_hoa_don) REFERENCES HOADON_DONTHUOC(ma_hoa_don) ON DELETE CASCADE,
     FOREIGN KEY (ma_don_thuoc) REFERENCES DONTHUOC(ma_don_thuoc) ON DELETE CASCADE
 );
-CREATE TABLE LICHSUTHANHTOAN (
-    ma_lich_su INT IDENTITY(1,1) PRIMARY KEY,
-	ma_benh_nhan int NOT NULL,
-    ma_hoa_don INT NOT NULL,
-	ma_hoa_don_donthuoc int NULL,
-    ma_dich_vu VARCHAR(20) NOT NULL,
-    ngay_su_dung DATETIME NOT NULL DEFAULT GETDATE(),
-    so_luong INT NOT NULL CHECK (so_luong > 0),
-    thanh_tien DECIMAL(10,2) NOT NULL,
-    ghi_chu NVARCHAR(255) NULL,
-    FOREIGN KEY (ma_hoa_don) REFERENCES HOADON(ma_hoa_don),
-	FOREIGN KEY (ma_hoa_don_donthuoc) REFERENCES HOADON(ma_hoa_don),
-	FOREIGN KEY (ma_benh_nhan) REFERENCES BENHNHAN(ma_benh_nhan),
-    FOREIGN KEY (ma_dich_vu) REFERENCES DICHVU(ma_dich_vu)
-);
-
+*/
 -------------------------------------------------------------insert vô bảng -------------------------------------------------------------------------
 -- insert từng cái 1 đừng kéo 1 lần insert hết là lỗi
 -- Bảng VAITRO
@@ -261,9 +261,9 @@ INSERT INTO VAITRO (ma_vai_tro, ten_vai_tro) VALUES
 
 -- Bảng QUANLY
 INSERT INTO QUANLY (ma_quan_ly, ho_ten, mat_khau, email, SDT, cccd, vai_tro, hinh, dia_chi)  
-VALUES ('QL001', N'Võ Nguyễn Duy Tân', '123', 'a@gmail.com', '0987654321', '123456789012', 'VT00', 'avatar.jpg', N'123 Đường ABC, TP. HCM');
+VALUES ('QL001', N'Võ Nguyễn Duy Tân', '123', 'admin@gmail.com', '0987654321', '123456789012', 'VT00', 'avatar.jpg', N'123 Đường ABC, TP. HCM');
 UPDATE QUANLY SET mat_khau = '$2a$10$RsgeqGNABvDJH6c1cCYHqetCYyat6y.cK3eMTPQBjRlLRj/NTJhRO' WHERE email = 'a@gmail.com';
-select * from quanly
+select * from HOADON_DONTHUOC
 -- Bảng CHUYENKHOA
 INSERT INTO CHUYENKHOA (ma_chuyen_khoa, ten_chuyen_khoa, hinh, so_luong) VALUES
 ('CK01', N'Nội Tổng Quát', 'noi_tong_quat.jpg', 0),
@@ -286,7 +286,7 @@ INSERT INTO BACSI (ma_bac_si, ho_ten, mat_khau, gioi_tinh, dia_chi, SDT, cccd, e
 VALUES 
 ('BS001', N'Nguyễn Văn A', '123456', 'Nam', N'123 Lê Lợi, Hà Nội', '0987654321', '012345678901', 'nguyenvana@example.com', N'bs001.jpg', 'VT01', 'CK01', N'Bác sĩ chuyên khoa nội'),
 ('BS002', N'Trần Thị B', 'abcdef', 'Nữ', N'45 Trần Hưng Đạo, TP.HCM', '0912345678', '023456789012', 'tranthib@example.com', N'bs002.jpg', 'VT02', 'CK02', N'Bác sĩ chuyên khoa ngoại'),
-('BS003', N'Lê Công C', 'pass789', 'Nam', N'78 Nguyễn Huệ, Đà Nẵng', '0933456789', '034567890123', 'lecongc@example.com', N'bs003.jpg', 'VT01', 'CK03', N'Bác sĩ chuyên khoa nhi'),
+('BS003', N'Lê Công C', 'pass789', 'Nam', N'78 Nguyễn Huệ, Đà Nẵng', '0933456789', '034567890123', 'lecongc@gmail.com', N'bs003.jpg', 'VT01', 'CK03', N'Bác sĩ chuyên khoa nhi'),
 ('BS004', N'Phạm Hải D', 'qwerty', 'Nam', N'90 Lý Thường Kiệt, Hải Phòng', '0967890123', '045678901234', 'phamhayd@example.com', N'bs004.jpg', 'VT03', 'CK01', N'Bác sĩ chuyên khoa răng hàm mặt'),
 ('BS005', N'Hoàng Minh E', 'xyz123', 'Nữ', N'12 Hoàng Diệu, Cần Thơ', '0978901234', '056789012345', 'hoangminhe@example.com', N'bs005.jpg', 'VT02', 'CK02', N'Bác sĩ chuyên khoa mắt');
 
@@ -297,12 +297,12 @@ INSERT INTO DICHVU (ma_dich_vu, ten_dich_vu, mo_ta, gia) VALUES
 ('DV02', N'Xét nghiệm máu', N'Xét nghiệm máu tổng quát', 200000),
 ('DV03', N'Chụp X-quang', N'Chụp X-quang phổi', 300000);
 select * from BENHNHAN
-
+/*
 -- Bảng NHANVIEN (tham chiếu VAITRO và CHUYENKHOA)
-INSERT INTO NHANVIEN (ma_nhan_vien, ho_ten, gioi_tinh, dia_chi, SDT, cccd, email, hinh, vai_tro, chuyen_khoa) VALUES
-('NV01', N'Nguyễn Văn A', 'Nam', N'Hà Nội', '0123456789', '123456789012', 'vana@example.com', 'a.jpg', 'VT01', 'CK01'),
-('NV02', N'Trần Thị B', 'Nữ', N'Hồ Chí Minh', '0987654321', '987654321098', 'thib@example.com', 'b.jpg', 'VT02', 'CK02'),
-('NV03', N'Lê Văn C', 'Nam', N'Đà Nẵng', '0912345678', '192837465012', 'vanc@example.com', 'c.jpg', 'VT03', 'CK03');
+INSERT INTO NHANVIEN (ma_nhan_vien, ho_ten, gioi_tinh, dia_chi, SDT, cccd, email, hinh, vai_tro) VALUES
+('NV01', N'Nguyễn Văn A', 'Nam', N'Hà Nội', '0123456789', '123456789012', 'vana@example.com', 'a.jpg', 'VT03'),
+('NV02', N'Trần Thị B', 'Nữ', N'Hồ Chí Minh', '0987654321', '987654321098', 'thib@example.com', 'b.jpg', 'VT03'),
+('NV03', N'Lê Văn C', 'Nam', N'Đà Nẵng', '0912345678', '192837465012', 'c@gmail.com', 'c.jpg', 'VT03');
 
 -- Bảng BENHNHAN
 INSERT INTO BENHNHAN ( ho_ten, nam_sinh, gioi_tinh, sdt, email, mat_khau, hinh, bao_hiem, tinh_tp, quan_huyen, duong) VALUES
@@ -399,5 +399,79 @@ INSERT INTO THANHTOAN (ma_thanh_toan, ma_lich_kham, ngay_thanh_toan, bao_hiem_ho
 INSERT INTO THANHTOAN_DONTHUOC (ma_thanh_toan_dt, ma_don_thuoc, ngay_thanh_toan, bao_hiem_ho_tro, so_tien_phai_tra, tong_tien, hinh_thuc, trang_thai) VALUES
 ('TTDT04', 'DT04', '2025-02-18', 50000, 450000, 500000, 'Tiền mặt', 'Đã thanh toán');
 
+drop table TRIEUCHUNG
+select * from TRIEUCHUNG;
+-- Chuyên khoa Nội Tổng Quát
+INSERT INTO TRIEUCHUNG (ten_trieu_chung, ma_chuyen_khoa) VALUES (N'Đau ngực', 'CK01');
+INSERT INTO TRIEUCHUNG (ten_trieu_chung, ma_chuyen_khoa) VALUES (N'Khó thở', 'CK01');
+INSERT INTO TRIEUCHUNG (ten_trieu_chung, ma_chuyen_khoa) VALUES (N'Sốt', 'CK01');
 
-select * from THUOC;
+-- Chuyên khoa Ngoại Tổng Quát
+INSERT INTO TRIEUCHUNG (ten_trieu_chung, ma_chuyen_khoa) VALUES (N'Đau vết thương', 'CK02');
+INSERT INTO TRIEUCHUNG (ten_trieu_chung, ma_chuyen_khoa) VALUES (N'Chảy máu', 'CK02');
+INSERT INTO TRIEUCHUNG (ten_trieu_chung, ma_chuyen_khoa) VALUES (N'Viêm nhiễm', 'CK02');
+
+-- Chuyên khoa Nhi Khoa
+INSERT INTO TRIEUCHUNG (ten_trieu_chung, ma_chuyen_khoa) VALUES (N'Sốt cao', 'CK03');
+INSERT INTO TRIEUCHUNG (ten_trieu_chung, ma_chuyen_khoa) VALUES (N'Cảm lạnh', 'CK03');
+INSERT INTO TRIEUCHUNG (ten_trieu_chung, ma_chuyen_khoa) VALUES (N'Khó thở', 'CK03');
+
+-- Chuyên khoa Sản Phụ Khoa
+INSERT INTO TRIEUCHUNG (ten_trieu_chung, ma_chuyen_khoa) VALUES (N'Đau bụng dưới', 'CK04');
+INSERT INTO TRIEUCHUNG (ten_trieu_chung, ma_chuyen_khoa) VALUES (N'Chảy máu âm đạo', 'CK04');
+INSERT INTO TRIEUCHUNG (ten_trieu_chung, ma_chuyen_khoa) VALUES (N'Dịch âm đạo bất thường', 'CK04');
+
+-- Chuyên khoa Răng Hàm Mặt
+INSERT INTO TRIEUCHUNG (ten_trieu_chung, ma_chuyen_khoa) VALUES (N'Đau răng', 'CK05');
+INSERT INTO TRIEUCHUNG (ten_trieu_chung, ma_chuyen_khoa) VALUES (N'Chảy máu lợi', 'CK05');
+INSERT INTO TRIEUCHUNG (ten_trieu_chung, ma_chuyen_khoa) VALUES (N'Hôi miệng', 'CK05');
+
+-- Chuyên khoa Tai Mũi Họng
+INSERT INTO TRIEUCHUNG (ten_trieu_chung, ma_chuyen_khoa) VALUES (N'Đau họng', 'CK06');
+INSERT INTO TRIEUCHUNG (ten_trieu_chung, ma_chuyen_khoa) VALUES (N'Ngạt mũi', 'CK06');
+INSERT INTO TRIEUCHUNG (ten_trieu_chung, ma_chuyen_khoa) VALUES (N'Chảy nước mũi', 'CK06');
+
+-- Chuyên khoa Mắt
+INSERT INTO TRIEUCHUNG (ten_trieu_chung, ma_chuyen_khoa) VALUES (N'Mờ mắt', 'CK07');
+INSERT INTO TRIEUCHUNG (ten_trieu_chung, ma_chuyen_khoa) VALUES (N'Đau mắt', 'CK07');
+INSERT INTO TRIEUCHUNG (ten_trieu_chung, ma_chuyen_khoa) VALUES (N'Chảy nước mắt', 'CK07');
+
+-- Chuyên khoa Da Liễu
+INSERT INTO TRIEUCHUNG (ten_trieu_chung, ma_chuyen_khoa) VALUES (N'Ngứa da', 'CK08');
+INSERT INTO TRIEUCHUNG (ten_trieu_chung, ma_chuyen_khoa) VALUES (N'Mụn', 'CK08');
+INSERT INTO TRIEUCHUNG (ten_trieu_chung, ma_chuyen_khoa) VALUES (N'Vảy nến', 'CK08');
+
+-- Chuyên khoa Thần Kinh
+INSERT INTO TRIEUCHUNG (ten_trieu_chung, ma_chuyen_khoa) VALUES (N'Đau đầu', 'CK09');
+INSERT INTO TRIEUCHUNG (ten_trieu_chung, ma_chuyen_khoa) VALUES (N'Chóng mặt', 'CK09');
+INSERT INTO TRIEUCHUNG (ten_trieu_chung, ma_chuyen_khoa) VALUES (N'Tê tay chân', 'CK09');
+
+-- Chuyên khoa Tim Mạch
+INSERT INTO TRIEUCHUNG (ten_trieu_chung, ma_chuyen_khoa) VALUES (N'Đau ngực', 'CK10');
+INSERT INTO TRIEUCHUNG (ten_trieu_chung, ma_chuyen_khoa) VALUES (N'Khó thở', 'CK10');
+INSERT INTO TRIEUCHUNG (ten_trieu_chung, ma_chuyen_khoa) VALUES (N'Mệt mỏi', 'CK10');
+
+-- Chuyên khoa Nội Tiết
+INSERT INTO TRIEUCHUNG (ten_trieu_chung, ma_chuyen_khoa) VALUES (N'Thèm ngọt', 'CK11');
+INSERT INTO TRIEUCHUNG (ten_trieu_chung, ma_chuyen_khoa) VALUES (N'Tăng cân nhanh', 'CK11');
+INSERT INTO TRIEUCHUNG (ten_trieu_chung, ma_chuyen_khoa) VALUES (N'Đau cơ', 'CK11');
+
+-- Chuyên khoa Xương Khớp
+INSERT INTO TRIEUCHUNG (ten_trieu_chung, ma_chuyen_khoa) VALUES (N'Đau khớp', 'CK12');
+INSERT INTO TRIEUCHUNG (ten_trieu_chung, ma_chuyen_khoa) VALUES (N'Sưng khớp', 'CK12');
+INSERT INTO TRIEUCHUNG (ten_trieu_chung, ma_chuyen_khoa) VALUES (N'Hạn chế cử động khớp', 'CK12');
+
+-- Chuyên khoa Hô Hấp
+INSERT INTO TRIEUCHUNG (ten_trieu_chung, ma_chuyen_khoa) VALUES (N'Ho', 'CK13');
+INSERT INTO TRIEUCHUNG (ten_trieu_chung, ma_chuyen_khoa) VALUES (N'Khó thở', 'CK13');
+INSERT INTO TRIEUCHUNG (ten_trieu_chung, ma_chuyen_khoa) VALUES (N'Đau họng', 'CK13');
+
+-- Chuyên khoa Tiêu Hóa
+INSERT INTO TRIEUCHUNG (ten_trieu_chung, ma_chuyen_khoa) VALUES (N'Đau bụng', 'CK14');
+INSERT INTO TRIEUCHUNG (ten_trieu_chung, ma_chuyen_khoa) VALUES (N'Nôn', 'CK14');
+INSERT INTO TRIEUCHUNG (ten_trieu_chung, ma_chuyen_khoa) VALUES (N'Tiêu chảy', 'CK14');
+
+-- Chuyên khoa Y Học Cổ Truyền
+INSERT INTO TRIEUCHUNG (ten_trieu_chung, ma_chuyen_khoa) VALUES (N'Đau mỏi', 'CK15');
+INSERT INTO TRIEUCHUNG (ten_trieu_chung, ma_chuyen_khoa) VALUES (N'Chóng mặt', 'CK15');
+INSERT INTO TRIEUCHUNG (ten_trieu_chung, ma_chuyen_khoa) VALUES (N'Mệt mỏi', 'CK15');

@@ -51,7 +51,7 @@ public class LichKham {
     @Column(name = "ngay_kham", nullable = false)
     private LocalDate ngayKham;
 
-    @Column(name = "gio_kham", nullable = false)
+    @Column(name = "gio_kham", nullable = false, columnDefinition = "TIME")
     private LocalTime gioKham;
 
     @Column(name = "trang_thai", nullable = false)
@@ -62,4 +62,7 @@ public class LichKham {
 
     @OneToMany(mappedBy = "lichKham", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<ChiTietDichVu> chiTietDichVus;
+
+    @Column(name = "da_thanh_toan")
+    private Boolean daThanhToan = false;
 }

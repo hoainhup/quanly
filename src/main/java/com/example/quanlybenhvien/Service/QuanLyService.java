@@ -10,6 +10,11 @@ import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
+import com.example.quanlybenhvien.Dao.BacSiDao;
+import com.example.quanlybenhvien.Dao.BenhAnDao;
+import com.example.quanlybenhvien.Dao.BenhNhanDao;
+import com.example.quanlybenhvien.Dao.LichKhamDao;
+import com.example.quanlybenhvien.Dao.NhanVienDao;
 import com.example.quanlybenhvien.Dao.QuanLyDao;
 import com.example.quanlybenhvien.Entity.QuanLy;
 
@@ -21,48 +26,82 @@ public class QuanLyService {
     QuanLyDao quanlLyDao;
     @Autowired
     PasswordEncoder passwordEncoder;
+    @Autowired
+    private BacSiDao bacSiDao;
+
+    @Autowired
+    private NhanVienDao nhanVienDao;
+
+    @Autowired
+    private BenhNhanDao benhNhanDao;
+
+    @Autowired
+    private LichKhamDao lichKhamDao;
+
+    @Autowired
+    private BenhAnDao benhAnDao;
 
     // @Override
-    //  public UserDetails loadUserByUsername(String email) throws UsernameNotFoundException {
-    //     Optional<QuanLy> optionalNguoiDung = quanlLyDao.findByEmail(email);
-    //     if (optionalNguoiDung.isEmpty()) {
-    //         throw new UsernameNotFoundException("Không tìm thấy người dùng");
-    //     }
+    // public UserDetails loadUserByUsername(String email) throws
+    // UsernameNotFoundException {
+    // Optional<QuanLy> optionalNguoiDung = quanlLyDao.findByEmail(email);
+    // if (optionalNguoiDung.isEmpty()) {
+    // throw new UsernameNotFoundException("Không tìm thấy người dùng");
+    // }
 
-    //     QuanLy admin = optionalNguoiDung.get();
-    //     if (!"VT00".equals(admin.getVaiTro().getMaVaiTro())) {
-    //         throw new UsernameNotFoundException("Bạn không có quyền đăng nhập vào hệ thống ADMIN");
-    //     }
+    // QuanLy admin = optionalNguoiDung.get();
+    // if (!"VT00".equals(admin.getVaiTro().getMaVaiTro())) {
+    // throw new UsernameNotFoundException("Bạn không có quyền đăng nhập vào hệ
+    // thống ADMIN");
+    // }
 
-    //     return User.builder()
-    //             .username(admin.getEmail())
-    //             .password(admin.getMatKhau())
-    //             .roles("VT00") // Chỉ admin
-    //             .build();
+    // return User.builder()
+    // .username(admin.getEmail())
+    // .password(admin.getMatKhau())
+    // .roles("VT00") // Chỉ admin
+    // .build();
     // }
     // public void registerUser(QuanLy user) {
-    //     user.setMatKhau(passwordEncoder.encode(user.getMatKhau())); // Mã hóa mật khẩu
-    //     quanlLyDao.save(user);
+    // user.setMatKhau(passwordEncoder.encode(user.getMatKhau())); // Mã hóa mật
+    // khẩu
+    // quanlLyDao.save(user);
     // }
 
     // @Transactional
     // public void updatePassword(String email, String newPassword) {
-    //     QuanLy user = quanlLyDao.findByEmail(email)
-    //             .orElseThrow(() -> new RuntimeException("Không tìm thấy người dùng"));
-        
-    //     // Mã hóa mật khẩu trước khi cập nhật
-    //     user.setMatKhau(passwordEncoder.encode(newPassword));
-    //     quanlLyDao.save(user);
-    // }    
+    // QuanLy user = quanlLyDao.findByEmail(email)
+    // .orElseThrow(() -> new RuntimeException("Không tìm thấy người dùng"));
 
-    public QuanLy findQuanLyByID(String maQuanLy)
-    {
+    // // Mã hóa mật khẩu trước khi cập nhật
+    // user.setMatKhau(passwordEncoder.encode(newPassword));
+    // quanlLyDao.save(user);
+    // }
+
+    public QuanLy findQuanLyByID(String maQuanLy) {
         return quanlLyDao.findByMaQuanLy(maQuanLy).orElse(null);
     }
-    public void saveQuanLy(QuanLy maQuanLy)
-    {
+
+    public void saveQuanLy(QuanLy maQuanLy) {
         quanlLyDao.save(maQuanLy);
     }
+
+    public long demSoLuongBacSi() {
+        return bacSiDao.count();
+    }
+
+    public long demSoLuongNhanVien() {
+        return nhanVienDao.count();
+    }
+
+    public long demSoLuongBenhNhan() {
+        return benhNhanDao.count();
+    }
+
+    public long demSoLuongLichKham() {
+        return lichKhamDao.count();
+    }
+
+    public long demSoLuongBenhAn() {
+        return benhAnDao.count();
+    }
 }
-
-

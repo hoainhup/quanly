@@ -1,6 +1,8 @@
 package com.example.quanlybenhvien.Service;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.LocalTime;
 import java.util.List;
 import java.util.Optional;
 
@@ -12,6 +14,7 @@ import com.example.quanlybenhvien.Dao.LichKhamDao;
 import com.example.quanlybenhvien.Entity.BacSi;
 import com.example.quanlybenhvien.Entity.BenhNhan;
 import com.example.quanlybenhvien.Entity.ChiTietDichVu;
+import com.example.quanlybenhvien.Entity.ChuyenKhoa;
 import com.example.quanlybenhvien.Entity.LichKham;
 import com.example.quanlybenhvien.Entity.NhanVien;
 
@@ -188,4 +191,9 @@ public class LichKhamService {
     public List<LichKham> getAllLichKhams() {
         return lichKhamDao.findAll();
     }
+
+    public List<LichKham> findByNgayKhamAndChuyenKhoa(LocalDate ngayKham, ChuyenKhoa chuyenKhoa) {
+        return lichKhamDao.findByNgayKhamAndChuyenKhoa(ngayKham, chuyenKhoa);
+    }
+
 }

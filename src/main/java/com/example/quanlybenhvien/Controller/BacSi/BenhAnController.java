@@ -2,7 +2,6 @@ package com.example.quanlybenhvien.Controller.BacSi;
 
 import java.sql.Date;
 import java.time.LocalDate;
-import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 
@@ -79,8 +78,7 @@ public class BenhAnController {
                 benhAn.setGhiChu(ghiChu);
                 benhAn.setTenBenhAn(tenBenhAn);
                 benhAn.setBacSi(lichKham.getBacSi());
-               benhAn.setNgayKham(LocalDateTime.now());
-
+                benhAn.setNgayKham(Date.valueOf(LocalDate.now()));
 
                 benhAnService.saveBenhAn(benhAn);
             } else {
@@ -97,41 +95,27 @@ public class BenhAnController {
 
     // Cập nhật bệnh án
     @PostMapping("/update/{benhAnId}")
-public String updateBenhAn(@PathVariable("benhAnId") Integer benhAnId,
-                           @ModelAttribute("benhAn") BenhAn benhAn, Model model) {
+    public String updateBenhAn(@PathVariable("benhAnId") Integer benhAnId,
+                               @ModelAttribute("benhAn") BenhAn benhAn, Model model) {
 
-    Optional<BenhAn> benhAnOpt = benhAnService.getBenhAnById(benhAnId);
+        Optional<BenhAn> benhAnOpt = benhAnService.getBenhAnById(benhAnId);
 
-    if (benhAnOpt.isPresent()) {
-        BenhAn existingBenhAn = benhAnOpt.get();
+        if (benhAnOpt.isPresent()) {
+            BenhAn existingBenhAn = benhAnOpt.get();
 
-        // Kiểm tra thời gian chỉnh sửa (15 phút)
-        LocalDateTime now = LocalDateTime.now();
-        LocalDateTime thoiGianTao = existingBenhAn.getNgayKham();
-        Duration duration = Duration.between(thoiGianTao, now);
+            existingBenhAn.setTenBenhAn(benhAn.getTenBenhAn());
+            existingBenhAn.setTrieuChung(benhAn.getTrieuChung());
+            existingBenhAn.setDieuTri(benhAn.getDieuTri());
+            existingBenhAn.setGhiChu(benhAn.getGhiChu());
 
-        if (duration.toMinutes() > 15) {
-            model.addAttribute("error", "Chỉ được chỉnh sửa bệnh án trong vòng 15 phút sau khi tạo.");
-            model.addAttribute("benhAn", existingBenhAn);
-            model.addAttribute("lichKham", existingBenhAn.getLichKham());
-            model.addAttribute("isEdit", true);
+            benhAnService.saveBenhAn(existingBenhAn);
+
+            return "redirect:/bacsi/trangchu/benhan/danh-sach-benh-an";
+        } else {
+            model.addAttribute("error", "Không tìm thấy bệnh án.");
             return "bacsi/thembenhan";
         }
-
-        existingBenhAn.setTenBenhAn(benhAn.getTenBenhAn());
-        existingBenhAn.setTrieuChung(benhAn.getTrieuChung());
-        existingBenhAn.setDieuTri(benhAn.getDieuTri());
-        existingBenhAn.setGhiChu(benhAn.getGhiChu());
-
-        benhAnService.saveBenhAn(existingBenhAn);
-
-        return "redirect:/bacsi/trangchu/benhan/danh-sach-benh-an";
-    } else {
-        model.addAttribute("error", "Không tìm thấy bệnh án.");
-        return "bacsi/thembenhan";
     }
-}
-
 
     // Sửa bệnh án
     @GetMapping("/edit/{id}")

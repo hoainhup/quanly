@@ -1,0 +1,291 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+
+<head>
+    <meta charset="UTF-8">
+    <title>Thống Kê Hóa Đơn</title>
+
+    <!-- Chart.js -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+    <!-- Bootstrap -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet">
+
+    <!-- Custom CSS -->
+    <link rel="stylesheet" href="/css/admin.css">
+
+    <style>
+        body {
+            font-family: 'Poppins', sans-serif;
+            background-color: #f8f9fa;
+        }
+
+        h1 {
+            text-align: center;
+            margin-bottom: 40px;
+            font-weight: bold;
+        }
+
+        .content {
+            margin-left: 250px;
+            padding: 20px;
+            transition: all 0.3s ease-in-out;
+        }
+
+        .form-container,
+        .chart-container,
+        .table-container,
+        form {
+            background: white;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.1);
+            margin-bottom: 30px;
+        }
+
+        form:hover {
+            box-shadow: 3px 6px 15px rgba(0, 0, 0, 0.2);
+            transform: scale(1.02);
+        }
+
+        input.form-control {
+            border-radius: 8px;
+            transition: all 0.3s ease-in-out;
+        }
+
+        input.form-control:focus {
+            border-color: #007bff;
+            box-shadow: 0px 0px 8px rgba(0, 123, 255, 0.5);
+        }
+
+        label {
+            font-weight: 500;
+        }
+
+        .table-hover tbody tr:hover {
+            background-color: #f1f3f5 !important;
+            font-weight: bold;
+            transform: scale(1.02);
+            transition: all 0.3s ease-in-out;
+        }
+
+        .btn {
+            transition: all 0.3s ease-in-out;
+            border-radius: 6px;
+        }
+
+        .btn:hover {
+            transform: scale(1.05);
+            box-shadow: 2px 4px 10px rgba(0, 0, 0, 0.2);
+        }
+
+        .navbar {
+            position: sticky;
+            top: 0;
+            z-index: 1000;
+        }
+
+        @media (max-width: 992px) {
+            .sidebar {
+                width: 100%;
+                height: auto;
+                position: relative;
+            }
+
+            .content {
+                margin-left: 0;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <!-- Navbar + Sidebar -->
+    <div th:replace="~{admin/navbar :: navbar}"></div>
+
+    <div class="d-flex">
+        <div th:replace="~{admin/menu :: menu}"></div>
+
+        <!-- Main Content -->
+        <main class="content w-100 ">
+            <div class="container">
+                <h1>THỐNG KÊ HÓA ĐƠN</h1>
+
+                <!-- Bộ lọc ngày -->
+                <form method="get" th:action="@{/quanly/trangchu/thongke/hoadonDV}">
+                    <div class="row g-3">
+                        <div class="col-md-5">
+                            <label for="startDate" class="form-label">Từ ngày:</label>
+                            <input type="date" class="form-control" id="startDate" name="startDate" required>
+                        </div>
+                        <div class="col-md-5">
+                            <label for="endDate" class="form-label">Đến ngày:</label>
+                            <input type="date" class="form-control" id="endDate" name="endDate" required>
+                        </div>
+                        <div class="col-md-1 d-flex align-items-end">
+                            <button type="submit" class="btn btn-primary w-100">Xem</button>
+                        </div>
+                        <div class="col-md-1 d-flex align-items-end">
+                            <a th:href="@{/quanly/trangchu/thongke/hoadonDV}" class="btn btn-secondary w-100">Reset</a>
+                        </div>
+                    </div>
+                </form>
+                <div class="row container">
+                    <div class="col-md-7">
+                        <!-- Tổng hóa đơn -->
+                        <div class="total-container">
+                            <h3>Tổng hóa đơn: <span
+                                    th:text="${#numbers.formatDecimal(totalAmount, 0, 'COMMA', 0, 'POINT')}"></span> VND
+                            </h3>
+                        </div>
+                        <!-- Tổng số hóa đơn -->
+                        <div class="total-container">
+                            <h3>Tổng số hóa đơn: <span th:text="${totalInvoices}">0</span></h3>
+                        </div>
+                    </div>
+                    <div class="col-md-4 ms-3 mb-2">
+                        <div class="">
+                            <h5 class="fw-bold text-uppercase">Thống kê theo hình thức thanh toán</h5>
+                            <ul class="list-group">
+                                <li class="list-group-item d-flex justify-content-between">
+                                    <span>Tiền mặt</span>
+                                    <span
+                                        th:text="${#numbers.formatDecimal(tongTienMat, 0, 'COMMA', 0, 'POINT')} + ' đ'"></span>
+                                </li>
+                                <li class="list-group-item d-flex justify-content-between">
+                                    <span>Chuyển khoản</span>
+                                    <span
+                                        th:text="${#numbers.formatDecimal(tongChuyenKhoan, 0, 'COMMA', 0, 'POINT')} + ' đ'"></span>
+                                </li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+                <!-- Biểu đồ -->
+                <div class="row">
+                    <div class="chart-container col-md-7" th:if="${chartData != null and #lists.size(chartData) > 0}">
+                        <canvas id="myChart" height="100"></canvas>
+                        <div th:if="${chartData == null or #lists.isEmpty(chartData)}">
+                            <p class="text-center text-muted">Không có dữ liệu để hiển thị biểu đồ.</p>
+                        </div>
+                    </div>
+                    <div class="chart-container col-md-4 ms-3 d-flex justify-content-center ">
+                        <!-- Doanh thu dịch vụ -->
+
+                        <div style="width: 300px; height: 300px;">
+                            <canvas id="pieChart"></canvas>
+                        </div>
+                    </div>
+                </div>
+                <!-- Bảng hóa đơn -->
+                <div class=" mt-4">
+                    <div class="table-responsive">
+                        <table class="table table-bordered table-hover text-center">
+                            <thead class="table-light">
+                                <tr>
+                                    <th>Mã Hóa Đơn</th>
+                                    <th>Ngày Thanh Toán</th>
+                                    <th>Tổng Tiền</th>
+                                    <th>Hình Thức</th>
+                                    <th>Trạng Thái</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr th:each="hoaDon : ${hoaDonList}">
+                                    <td th:text="${hoaDon.maHoaDon}">HD001</td>
+                                    <td th:text="${hoaDon.ngayThanhToan}">2024-01-01</td>
+                                    <td th:text="${hoaDon.tongTien}">1.000.000</td>
+                                    <td th:text="${hoaDon.hinhThuc}">Tiền mặt</td>
+                                    <td th:text="${hoaDon.trangThai}">Đã thanh toán</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Line Chart Script -->
+            <script th:inline="javascript">
+                /*<![CDATA[*/
+                let chartData = [[${chartData}]];
+                let labels = chartData.map(row => row[0]);
+                let data = chartData.map(row => row[1]);
+
+                const ctx = document.getElementById('myChart').getContext('2d');
+                new Chart(ctx, {
+                    type: 'line',
+                    data: {
+                        labels: labels,
+                        datasets: [{
+                            label: 'Tổng tiền theo ngày',
+                            data: data,
+                            fill: true,
+                            borderColor: 'rgba(75, 192, 192, 1)',
+                            backgroundColor: 'rgba(75, 192, 192, 0.2)',
+                            tension: 0.4,
+                            pointBackgroundColor: 'rgba(255, 99, 132, 1)',
+                            pointRadius: 5,
+                            pointHoverRadius: 7
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        scales: {
+                            y: {
+                                beginAtZero: true
+                            }
+                        }
+                    }
+                });
+                /*]]>*/
+            </script>
+
+            <!-- Pie Chart Script -->
+            <script th:inline="javascript">
+                /*<![CDATA[*/
+                let paymentSummary = [[${ paymentSummary }]];
+                let pieLabels = Object.keys(paymentSummary);
+                let pieData = Object.values(paymentSummary);
+
+                const pieCtx = document.getElementById('pieChart').getContext('2d');
+                new Chart(pieCtx, {
+                    type: 'pie',
+                    data: {
+                        labels: pieLabels,
+                        datasets: [{
+                            label: 'Tổng tiền theo hình thức thanh toán',
+                            data: pieData,
+                            backgroundColor: [
+                                'rgba(54, 162, 235, 0.7)',
+                                'rgba(75, 192, 75, 0.7)'
+                            ],
+                            borderColor: [
+                                'rgba(54, 162, 235, 1)',
+                                'rgba(75, 192, 75, 1)'
+                            ],
+                            borderWidth: 1
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        plugins: {
+                            legend: {
+                                position: 'top'
+                            },
+                            tooltip: {
+                                callbacks: {
+                                    label: function (context) {
+                                        return context.label + ': ' + context.raw.toLocaleString() + ' VND';
+                                    }
+                                }
+                            }
+                        }
+                    }
+                });
+                /*]]>*/
+            </script>
+        </main>
+    </div>
+</body>
+
+</html>

@@ -17,7 +17,7 @@
     <link rel="shortcut icon"
         href="https://idodesign.vn/wp-content/uploads/2023/08/mau-thiet-ke-logo-nha-thuoc-dep-6.jpg"
         type="image/x-icon">
-        <link rel="stylesheet" th:href="@{/css/header.css}">
+    <link rel="stylesheet" th:href="@{/css/header.css}">
 
     <!-- Custom CSS -->
     <style>
@@ -67,46 +67,46 @@
             box-shadow: 0 4px 12px rgba(0, 123, 255, 0.4);
             transform: translateY(-1px);
         }
+
         /* Phần thông tin cá nhân */
-.personal-info-form {
-    background: #ffffff;
-    padding: 30px;
-    border-radius: 15px;
-    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.15);
-    margin-top: 40px;
-}
+        .personal-info-form {
+            background: #ffffff;
+            padding: 30px;
+            border-radius: 15px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.15);
+            margin-top: 40px;
+        }
 
-.personal-info-form h2 {
-    margin-bottom: 20px;
-}
+        .personal-info-form h2 {
+            margin-bottom: 20px;
+        }
 
-.personal-info-form .form-control {
-    padding: 12px 15px;
-    font-size: 16px;
-    border: 1px solid #ccc;
-    border-radius: 8px;
-    transition: all 0.3s ease;
-}
+        .personal-info-form .form-control {
+            padding: 12px 15px;
+            font-size: 16px;
+            border: 1px solid #ccc;
+            border-radius: 8px;
+            transition: all 0.3s ease;
+        }
 
-.personal-info-form .form-control:focus {
-    border-color: #28a745;
-    box-shadow: 0 0 8px rgba(40, 167, 69, 0.4);
-}
+        .personal-info-form .form-control:focus {
+            border-color: #28a745;
+            box-shadow: 0 0 8px rgba(40, 167, 69, 0.4);
+        }
 
-.personal-info-form .form-control:hover {
-    border-color: #28a745;
-}
+        .personal-info-form .form-control:hover {
+            border-color: #28a745;
+        }
 
-.personal-info-form label {
-    font-weight: 500;
-    margin-bottom: 5px;
-    color: #333;
-}
+        .personal-info-form label {
+            font-weight: 500;
+            margin-bottom: 5px;
+            color: #333;
+        }
 
-.personal-info-form .row > div {
-    margin-bottom: 15px;
-}
-
+        .personal-info-form .row>div {
+            margin-bottom: 15px;
+        }
     </style>
 </head>
 
@@ -122,41 +122,50 @@
                 <span>Đặt lịch thành công! Chúng tôi sẽ sớm xác nhận lịch hẹn của bạn.</span>
                 <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
             </div>
-    
+
             <div th:if="${param.error}" class="alert alert-danger alert-dismissible fade show" role="alert">
                 <i class="fa-solid fa-triangle-exclamation"></i>
                 <span th:text="${param.error}"></span>
                 <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
             </div>
+
+            <div th:if="${errorMessage}" class="alert alert-danger alert-dismissible fade show" role="alert">
+                <i class="fa-solid fa-triangle-exclamation"></i>
+                <span th:text="${errorMessage}"></span>
+                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+            </div>
+
         </div>
-    
+
         <!-- Bắt đầu row chứa 2 form -->
         <div class="row">
             <!-- Form Đặt Lịch (bên trái) -->
             <div class="col-md-6 mb-4">
                 <div class="appointment-form">
                     <h2><i class="fa-solid fa-calendar-plus"></i> Đặt Lịch Khám</h2>
-    
+
                     <!-- Form chọn chuyên khoa -->
                     <form method="get" th:action="@{/nguoidung/lichkham}" class="mb-3">
                         <label class="form-label">Chuyên Khoa</label>
                         <select class="form-select" name="maChuyenKhoa" onchange="this.form.submit()">
                             <option value="">-- Chọn chuyên khoa --</option>
                             <option th:each="ck : ${dsChuyenKhoa}" th:value="${ck.maChuyenKhoa}"
-                                th:text="${ck.tenChuyenKhoa}" th:selected="${ck.maChuyenKhoa == selectedChuyenKhoa}"></option>
+                                th:text="${ck.tenChuyenKhoa}" th:selected="${ck.maChuyenKhoa == selectedChuyenKhoa}">
+                            </option>
                         </select>
                     </form>
-    
+
                     <!-- Form chi tiết đặt lịch -->
                     <form class="row g-3" method="post" th:action="@{/nguoidung/lichkham}" th:object="${lichKham}">
                         <!-- Giữ maChuyenKhoa khi POST -->
                         <input type="hidden" name="maChuyenKhoa" th:value="${selectedChuyenKhoa}">
-    
+
                         <div class="col-12">
                             <label class="form-label">Bác sĩ</label>
                             <select class="form-select" th:field="*{bacSi}" required>
                                 <option value="">-- Chọn bác sĩ --</option>
-                                <option th:each="bs : ${dsBacSi}" th:value="${bs.maBacSi}" th:text="${bs.hoTen}"></option>
+                                <option th:each="bs : ${dsBacSi}" th:value="${bs.maBacSi}" th:text="${bs.hoTen}">
+                                </option>
                             </select>
                         </div>
                         <div class="col-md-6">
@@ -167,60 +176,60 @@
                             <label class="form-label">Ngày</label>
                             <input type="date" th:field="*{ngayKham}" class="form-control">
                         </div>
-    
+
                         <div class="col-12">
                             <label class="form-label">Ghi chú</label>
                             <textarea th:field="*{ghiChu}" class="form-control" rows="3"></textarea>
                         </div>
-    
+
                         <div class="col-12">
                             <button type="submit" class="btn btn-primary">Đặt lịch</button>
                         </div>
                     </form>
                 </div>
             </div>
-    
+
             <!-- Form Thông tin người dùng (bên phải) -->
             <div class="col-md-6 mb-4">
                 <div class="personal-info-form">
                     <h2><i class="fa-solid fa-user"></i> Thông tin của bạn</h2>
-    
+
                     <form class="row g-3">
                         <div class="col-md-6">
                             <label class="form-label">Họ và Tên</label>
                             <input type="text" th:value="${user.hoTen}" class="form-control" readonly>
                         </div>
-    
+
                         <div class="col-md-6">
                             <label class="form-label">Email</label>
                             <input type="text" th:value="${user.email}" class="form-control" readonly>
                         </div>
-    
+
                         <div class="col-md-6">
                             <label class="form-label">Giới tính</label>
                             <input type="text" th:value="${user.gioiTinh}" class="form-control" readonly>
                         </div>
-    
+
                         <div class="col-md-6">
                             <label class="form-label">Năm sinh</label>
                             <input type="text" th:value="${user.namSinh}" class="form-control" readonly>
                         </div>
-    
+
                         <div class="col-md-6">
                             <label class="form-label">Số điện thoại</label>
                             <input type="text" th:value="${user.sdt}" class="form-control" readonly>
                         </div>
-    
+
                         <div class="col-md-6">
                             <label class="form-label">Tỉnh/Thành Phố</label>
                             <input type="text" th:value="${user.tinhTp}" class="form-control" readonly>
                         </div>
-    
+
                         <div class="col-md-6">
                             <label class="form-label">Quận/Huyện</label>
                             <input type="text" th:value="${user.quanHuyen}" class="form-control" readonly>
                         </div>
-    
+
                         <div class="col-md-6">
                             <label class="form-label">Đường</label>
                             <input type="text" th:value="${user.duong}" class="form-control" readonly>
@@ -230,7 +239,7 @@
             </div>
         </div>
     </div>
-    
+
     <!-- Footer -->
     <div th:replace="~{footer :: footer}"></div>
 

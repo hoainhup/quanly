@@ -2,6 +2,7 @@ package com.example.quanlybenhvien.Entity;
 
 import java.sql.Date;
 import java.time.LocalDateTime;
+import java.util.List;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -10,6 +11,7 @@ import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
+import jakarta.persistence.OneToMany;
 import jakarta.persistence.Table;
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -37,4 +39,9 @@ public class DonThuoc {
 
     @Column(name = "ngay_lap", nullable = false)
     private LocalDateTime ngayLap = LocalDateTime.now();
+
+    @OneToMany
+    @JoinColumn(name = "ma_don_thuoc", referencedColumnName = "ma_don_thuoc") // khóa ngoại ở bảng CHITIETDONTHUOC
+    private List<ChiTietDonThuoc> chiTietDonThuocs;
+
 }

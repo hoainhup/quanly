@@ -1,0 +1,256 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Thống Kê Lịch Khám</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="/css/admin.css">
+    <style>
+        body {
+            font-family: 'Poppins', sans-serif;
+            background-color: #f8f9fa;
+        }
+
+        .content {
+            margin-left: 250px;
+            padding: 20px;
+            transition: all 0.3s ease-in-out;
+        }
+
+        form {
+            background: white;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 2px 4px 10px rgba(0, 0, 0, 0.1);
+            transition: all 0.3s ease-in-out;
+        }
+
+        form:hover {
+            box-shadow: 3px 6px 15px rgba(0, 0, 0, 0.2);
+            transform: scale(1.02);
+        }
+
+        input.form-control {
+            border-radius: 8px;
+            transition: all 0.3s ease-in-out;
+        }
+
+        input.form-control:focus {
+            border-color: #007bff;
+            box-shadow: 0px 0px 8px rgba(0, 123, 255, 0.5);
+        }
+
+        .table-hover tbody tr:hover {
+            background-color: #f1f3f5 !important;
+            font-weight: bold;
+            transform: scale(1.02);
+            transition: all 0.3s ease-in-out;
+        }
+
+        .btn {
+            transition: all 0.3s ease-in-out;
+            border-radius: 6px;
+        }
+
+        .btn:hover {
+            transform: scale(1.05);
+            box-shadow: 2px 4px 10px rgba(0, 0, 0, 0.2);
+        }
+
+        .navbar {
+            position: sticky;
+            top: 0;
+            z-index: 1000;
+        }
+
+        @media (max-width: 992px) {
+            .sidebar {
+                width: 100%;
+                height: auto;
+                position: relative;
+            }
+
+            .content {
+                margin-left: 0;
+            }
+        }
+
+        /* Biểu đồ - Bóng đổ và hiệu ứng */
+        .chart-wrapper {
+            background: white;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 2px 4px 15px rgba(0, 0, 0, 0.1);
+            transition: all 0.3s ease-in-out;
+            margin-bottom: 20px;
+        }
+
+        .chart-wrapper:hover {
+            box-shadow: 4px 8px 25px rgba(0, 0, 0, 0.2);
+            transform: scale(1.01);
+        }
+    </style>
+</head>
+
+<body>
+<div th:replace="~{admin/navbar :: navbar}"></div>
+<div class="d-flex">
+    <div th:replace="~{admin/menu :: menu}"></div>
+
+    <main class="content w-100">
+        <div class="container">
+            <h1>THỐNG KÊ LỊCH KHÁM</h1>
+
+            <!-- Bộ lọc ngày -->
+            <form method="get" th:action="@{/quanly/trangchu/thongke/lichkham}">
+                <div class="row g-3">
+                    <div class="col-md-5">
+                        <label for="startDate" class="form-label">Từ ngày:</label>
+                        <input type="date" class="form-control" id="startDate" name="startDate" required>
+                    </div>
+                    <div class="col-md-5">
+                        <label for="endDate" class="form-label">Đến ngày:</label>
+                        <input type="date" class="form-control" id="endDate" name="endDate" required>
+                    </div>
+                    <div class="col-md-1 d-flex align-items-end">
+                        <button type="submit" class="btn btn-primary w-100">Xem</button>
+                    </div>
+                    <div class="col-md-1 d-flex align-items-end">
+                        <a th:href="@{/quanly/trangchu/thongke/lichkham}" class="btn btn-secondary w-100">Reset</a>
+                    </div>
+                </div>
+            </form>
+
+            <!-- Tổng lịch khám -->
+            <div class="mt-4 mb-3">
+                <h4>Tổng lịch khám: <span th:text="${totalAppointments}">0</span></h4>
+            </div>
+
+            <!-- Biểu đồ -->
+            <!-- Line Chart - Trên cùng -->
+            <div class="row mb-4" th:if="${appointmentChartData != null}">
+                <div class="col-12">
+                    <div class="chart-wrapper">
+                        <canvas id="lineChart"></canvas>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Bar Chart và Pie Chart - Cùng hàng -->
+            <div class="row g-4">
+                <div class="col-md-6" th:if="${doctorChartData != null}">
+                    <div class="chart-wrapper">
+                        <canvas id="barChart"></canvas>
+                    </div>
+                </div>
+                <div class="col-md-6" th:if="${statusSummary != null}">
+                    <div class="chart-wrapper">
+                        <canvas id="statusPieChart"></canvas>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Bảng lịch khám -->
+            <div class="table-container">
+                <h5 class="mb-3">Danh sách lịch khám</h5>
+                <div class="table-responsive">
+                    <table class="table table-bordered table-hover text-center">
+                        <thead class="table-light">
+                        <tr>
+                            <th>Mã</th>
+                            <th>Bệnh nhân</th>
+                            <th>Bác sĩ</th>
+                            <th>Ngày</th>
+                            <th>Giờ</th>
+                            <th>Trạng thái</th>
+                        </tr>
+                        </thead>
+                        <tbody>
+                        <tr th:each="lich : ${lichKhamList}">
+                            <td th:text="${lich.maLichKham}">LK001</td>
+                            <td th:text="${lich.benhNhan.hoTen}">Nguyễn Văn A</td>
+                            <td th:text="${lich.bacSi.maBacSi}">BS. Hùng</td>
+                            <td th:text="${lich.ngayKham}">2024-01-01</td>
+                            <td th:text="${lich.gioKham}">08:00</td>
+                            <td th:text="${lich.trangThai}">Đã khám</td>
+                        </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <!-- Scripts -->
+        <script th:inline="javascript">
+            /*<![CDATA[*/
+            let appointmentChartData = [[${appointmentChartData}]];
+            let doctorChartData = [[${doctorChartData}]];
+            let statusSummary = [[${statusSummary}]];
+
+            // Line Chart - Theo ngày
+            const lineCtx = document.getElementById('lineChart').getContext('2d');
+            new Chart(lineCtx, {
+                type: 'line',
+                data: {
+                    labels: appointmentChartData.map(e => e[0]),
+                    datasets: [{
+                        label: 'Số lịch khám theo ngày',
+                        data: appointmentChartData.map(e => e[1]),
+                        borderColor: 'rgba(54, 162, 235, 1)',
+                        backgroundColor: 'rgba(54, 162, 235, 0.2)',
+                        tension: 0.4
+                    }]
+                },
+                options: {
+                    responsive: true
+                }
+            });
+
+            // Bar Chart - Theo bác sĩ
+            const barCtx = document.getElementById('barChart').getContext('2d');
+            new Chart(barCtx, {
+                type: 'bar',
+                data: {
+                    labels: doctorChartData.map(e => e[0]),
+                    datasets: [{
+                        label: 'Lịch khám theo bác sĩ',
+                        data: doctorChartData.map(e => e[1]),
+                        backgroundColor: 'rgba(75, 192, 192, 0.7)',
+                        borderColor: 'rgba(75, 192, 192, 1)',
+                        borderWidth: 1
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    scales: {
+                        y: {
+                            beginAtZero: true
+                        }
+                    }
+                }
+            });
+
+            // Pie Chart - Theo trạng thái
+            const pieCtx = document.getElementById('statusPieChart').getContext('2d');
+            new Chart(pieCtx, {
+                type: 'pie',
+                data: {
+                    labels: Object.keys(statusSummary),
+                    datasets: [{
+                        data: Object.values(statusSummary),
+                        backgroundColor: [
+                            '#198754', '#ffc107', '#dc3545'
+                        ]
+                    }]
+                },
+                options: {
+                    responsive: true
+                }
+            });
+            /*]]>*/
+        </script>
+    </main>
+</div>
+</body>
+</html>

@@ -1,11 +1,52 @@
 <div class="sidebar" th:fragment="menu">
-    <h3 class="text-center">📌 Nhân Viên</h3>
-    <ul class="nav flex-column">
-        <li class="nav-item"><a class="nav-link btn btn-outline-light mb-2" th:href="@{/nhanvien/trangchu/nhapthuoc/form}">📥 Nhập Thuốc</a></li>
-        <li class="nav-item"><a class="nav-link btn btn-outline-light mb-2" th:href="@{/nhanvien/trangchu/khothuoc/list}">📦 Kho Thuốc</a></li>
-        <li class="nav-item"><a class="nav-link btn btn-outline-light mb-2" th:href="@{/nhanvien/trangchu/thuoc}">📑 Danh Sách Thuốc</a></li>
-        <li class="nav-item"><a class="nav-link btn btn-info" th:href="@{/nhanvien/profile}">👤 Thông Tin Cá Nhân</a></li>
-        <li class="nav-item"><a class="nav-link btn btn-info" th:href="@{/nhanvien/trangchu/lichkham/cho-xac-nhan}">📑 Danh Sách Lịch Khám</a></li>
-        <li class="nav-item"><a class="nav-link btn btn-info" th:href="@{/nhanvien/trangchu/thanhtoan/hoadon}">📑 Danh Sách Hóa đơn</a></li>
-    </ul>
+  <h3 class="text-center">📌 Nhân Viên</h3>
+  <ul class="nav flex-column">
+    <li class="nav-item">
+      <a
+        class="nav-link btn btn-outline-light mb-2"
+        th:href="@{/nhanvien/trangchu/nhapthuoc/form}"
+        >📥 Nhập Thuốc</a
+      >
+    </li>
+    <li class="nav-item">
+      <a
+        class="nav-link btn btn-outline-light mb-2"
+        th:href="@{/nhanvien/trangchu/khothuoc/list}"
+        >📦 Kho Thuốc</a
+      >
+    </li>
+    <li class="nav-item">
+      <a
+        class="nav-link btn btn-outline-light mb-2"
+        th:href="@{/nhanvien/trangchu/thuoc}"
+        >📑 Danh Sách Thuốc</a
+      >
+    </li>
+    <li class="nav-item">
+      <a class="nav-link btn btn-info" th:href="@{/nhanvien/profile}"
+        >👤 Thông Tin Cá Nhân</a
+      >
+    </li>
+    <li class="nav-item">
+      <a
+        class="nav-link btn btn-info"
+        th:href="@{/nhanvien/trangchu/lichkham/cho-xac-nhan}"
+        >📑 Danh Sách Lịch Khám</a
+      >
+    </li>
+    <li class="nav-item">
+      <a
+        class="nav-link btn btn-info"
+        th:href="@{/nhanvien/trangchu/thanhtoan/hoadon}"
+        >📑 Danh Sách Hóa đơn</a
+      >
+    </li>
+    <li class="nav-item">
+      <a
+        class="nav-link btn btn-info"
+        th:href="@{/nhanvien/trangchu/danhsach-thuoc}"
+        >📑 Danh Sách Đơn thuốc</a
+      >
+    </li>
+  </ul>
 </div>

@@ -23,6 +23,7 @@ import lombok.NoArgsConstructor;
 @Entity
 @Table(name = "HOADON")
 public class HoaDonLichKham {
+
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "ma_hoa_don")
@@ -44,4 +45,5 @@ public class HoaDonLichKham {
 
     @Column(name = "trang_thai", nullable = false)
     private String trangThai;
+
 }

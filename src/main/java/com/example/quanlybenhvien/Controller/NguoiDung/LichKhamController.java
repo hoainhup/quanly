@@ -1,5 +1,10 @@
 package com.example.quanlybenhvien.Controller.NguoiDung;
 
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.LocalTime;
+import java.time.format.DateTimeFormatter;
+import java.time.temporal.ChronoUnit;
 import java.util.List;
 import java.util.Optional;
 
@@ -20,10 +25,12 @@ import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 import com.example.quanlybenhvien.Entity.BacSi;
 import com.example.quanlybenhvien.Entity.BenhNhan;
 import com.example.quanlybenhvien.Entity.ChuyenKhoa;
+import com.example.quanlybenhvien.Entity.HoaDonLichKham;
 import com.example.quanlybenhvien.Entity.LichKham;
 import com.example.quanlybenhvien.Service.BacSiService;
 import com.example.quanlybenhvien.Service.BenhNhanService;
 import com.example.quanlybenhvien.Service.ChuyenKhoaService;
+import com.example.quanlybenhvien.Service.HoaDonService;
 import com.example.quanlybenhvien.Service.LichKhamService;
 
 import jakarta.servlet.http.HttpSession;
@@ -40,6 +47,9 @@ public class LichKhamController {
 
     @Autowired
     private BacSiService bacSiService;
+
+    @Autowired
+    private HoaDonService hoaDonService;
 
     @Autowired
     BenhNhanService benhNhanService;
@@ -99,6 +109,36 @@ public class LichKhamController {
             return "redirect:/nguoidung/lichkham";
         }
 
+        // Kiểm tra giờ đặt lịch
+        LocalTime startTime = LocalTime.of(7, 30); // 7h30
+        LocalTime endTime = LocalTime.of(16, 0); // 16h00
+        LocalTime appointmentTime = lichKham.getGioKham(); // Lấy thời gian đặt lịch từ LichKham
+
+        if (appointmentTime.isBefore(startTime) || appointmentTime.isAfter(endTime)) {
+            redirectAttributes.addFlashAttribute("errorMessage", "Giờ đặt lịch phải trong khoảng từ 7h30 đến 16h00!");
+            return "redirect:/nguoidung/lichkham";
+        }
+
+        // Kiểm tra ngày đặt lịch (ví dụ, chỉ cho phép đặt trong các ngày làm việc)
+        LocalDate appointmentDate = lichKham.getNgayKham(); // Lấy ngày đặt lịch
+        LocalDate today = LocalDate.now();
+
+        if (appointmentDate.isBefore(today)) {
+            redirectAttributes.addFlashAttribute("errorMessage", "Ngày đặt lịch không hợp lệ!");
+            return "redirect:/nguoidung/lichkham";
+        }
+
+        // Kiểm tra nếu đã có lịch khám tại giờ đã chọn trong ngày đặt lịch
+        List<LichKham> existingAppointments = lichKhamService.findByNgayKhamAndChuyenKhoa(appointmentDate,
+                chuyenKhoa.get());
+        for (LichKham existingAppointment : existingAppointments) {
+            if (existingAppointment.getGioKham().equals(appointmentTime)) {
+                redirectAttributes.addFlashAttribute("errorMessage",
+                        "Giờ này đã có người đặt lịch rồi, vui lòng chọn giờ khác.");
+                return "redirect:/nguoidung/lichkham";
+            }
+        }
+
         // Kiểm tra nếu người dùng đăng nhập bằng tài khoản thông thường
         if (principal instanceof BenhNhan user) {
             lichKham.setBenhNhan(user);
@@ -154,6 +194,7 @@ public class LichKhamController {
 
         return "lichsudatlich";
     }
+
     @GetMapping("/huylichkham")
     public String huyLichKham(@RequestParam("maLichKham") Integer maLichKham,
             RedirectAttributes redirectAttributes) {
@@ -175,5 +216,19 @@ public class LichKhamController {
 
         return "redirect:/nguoidung/lichkham/lichsu";
 
+    }
+
+    @GetMapping("/xemhoadon")
+    public String xemHoaDon(@RequestParam("maLichKham") Integer maLichKham, Model model,
+            RedirectAttributes redirectAttributes) {
+        Optional<HoaDonLichKham> optionalHoaDon = hoaDonService.findByMaLichKham(maLichKham);
+
+        if (optionalHoaDon.isPresent()) {
+            model.addAttribute("hoaDon", optionalHoaDon.get());
+            return "lichsuhoadon";
+        } else {
+            redirectAttributes.addFlashAttribute("errorMessage", "Không tìm thấy hóa đơn cho lịch khám này.");
+            return "redirect:/nguoidung/lichkham/lichsu";
+        }
     }
 }

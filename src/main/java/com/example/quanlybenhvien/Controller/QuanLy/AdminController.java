@@ -9,6 +9,11 @@ import org.springframework.web.bind.annotation.RequestParam;
 
 import com.example.quanlybenhvien.Service.QuanLyService;
 
+import jakarta.servlet.http.Cookie;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
+import jakarta.servlet.http.HttpSession;
+
 @Controller
 public class AdminController {
     @Autowired
@@ -27,8 +32,42 @@ public class AdminController {
         return "admin/admin-login";
     }
 
+    // Phương thức trang chủ admin
     @GetMapping("/quanly/trangchu")
-    public String showAdminHome() {
-        return "admin/admin";
+    public String showAdminHome(Model model) {
+        // Lấy số liệu từ service
+        long soLuongBacSi = nguoiDungService.demSoLuongBacSi();
+        long soLuongNhanVien = nguoiDungService.demSoLuongNhanVien();
+        long soLuongBenhNhan = nguoiDungService.demSoLuongBenhNhan();
+
+        // Thêm các giá trị vào model
+        model.addAttribute("soLuongBacSi", soLuongBacSi);
+        model.addAttribute("soLuongNhanVien", soLuongNhanVien);
+        model.addAttribute("soLuongBenhNhan", soLuongBenhNhan);
+
+        return "admin/admin"; // Trả về trang admin
+    }
+
+    @GetMapping("/quanly/logout")
+    public String logout(HttpServletRequest request, HttpServletResponse response) {
+        // Xóa session
+        HttpSession session = request.getSession(false);
+        if (session != null) {
+            session.invalidate();
+        }
+
+        // Xóa tất cả cookie
+        Cookie[] cookies = request.getCookies();
+        if (cookies != null) {
+            for (Cookie cookie : cookies) {
+                cookie.setValue(null);
+                cookie.setMaxAge(0);
+                cookie.setPath("/"); // Đảm bảo path đúng để xóa chính xác
+                response.addCookie(cookie);
+            }
+        }
+
+        // Redirect về trang login với thông báo logout
+        return "redirect:/quanly/login?logout";
     }
 }

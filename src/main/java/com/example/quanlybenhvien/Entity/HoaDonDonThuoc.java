@@ -1,6 +1,8 @@
 package com.example.quanlybenhvien.Entity;
 
+import java.math.BigDecimal;
 import java.sql.Date;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 
 import jakarta.persistence.Column;
@@ -24,16 +26,20 @@ public class HoaDonDonThuoc {
     @Column(name = "ma_hoa_don")
     private Integer maHoaDon;
 
-    @ManyToOne
-    @JoinColumn(name = "ma_benh_nhan", nullable = false)
-    private BenhNhan benhNhan;
-
     @Column(name = "ngay_thanh_toan", nullable = false)
-    private LocalDateTime ngayThanhToan;
+    private LocalDate ngayThanhToan;
 
     @Column(name = "hinh_thuc", nullable = false, length = 100)
     private String hinhThuc;
 
+    @ManyToOne
+    @JoinColumn(name = "ma_don_thuoc", nullable = false)
+    private DonThuoc donThuoc;
+
     @Column(name = "trang_thai", nullable = false, length = 50)
     private String trangThai;
+
+    @Column(name = "tong_tien", nullable = false, precision = 10, scale = 2)
+    private BigDecimal tongTien;
+
 }

@@ -38,7 +38,7 @@ public class SecurityConfig {
                                                                 "/images/**", "/api/vaitro", "/nguoidung/chuyenkhoa",
                                                                 "/nguoidung/chuyenkhoa/chitiet/**",
                                                                 "/nguoidung/bacsi", "/nguoidung/bacsi/chitiet/**",
-                                                                "/nguoidung/lichkham")
+                                                                "/nguoidung/lichkham","/chat")
                                                 .permitAll()
                                                 .anyRequest().authenticated())
                                 .formLogin(form -> form

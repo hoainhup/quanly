@@ -1,0 +1,207 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Thống Kê Lịch Khám</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="/css/admin.css">
+    <style>
+        body {
+            font-family: 'Poppins', sans-serif;
+            background-color: #f8f9fa;
+        }
+
+        .content {
+            margin-left: 250px;
+            padding: 20px;
+            transition: all 0.3s ease-in-out;
+        }
+
+        form {
+            background: white;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 2px 4px 10px rgba(0, 0, 0, 0.1);
+            transition: all 0.3s ease-in-out;
+        }
+
+        form:hover {
+            box-shadow: 3px 6px 15px rgba(0, 0, 0, 0.2);
+            transform: scale(1.02);
+        }
+
+        input.form-control {
+            border-radius: 8px;
+            transition: all 0.3s ease-in-out;
+        }
+
+        input.form-control:focus {
+            border-color: #007bff;
+            box-shadow: 0px 0px 8px rgba(0, 123, 255, 0.5);
+        }
+
+        .table-hover tbody tr:hover {
+            background-color: #f1f3f5 !important;
+            font-weight: bold;
+            transform: scale(1.02);
+            transition: all 0.3s ease-in-out;
+        }
+
+        .btn {
+            transition: all 0.3s ease-in-out;
+            border-radius: 6px;
+        }
+
+        .btn:hover {
+            transform: scale(1.05);
+            box-shadow: 2px 4px 10px rgba(0, 0, 0, 0.2);
+        }
+
+        .navbar {
+            position: sticky;
+            top: 0;
+            z-index: 1000;
+        }
+
+        @media (max-width: 992px) {
+            .sidebar {
+                width: 100%;
+                height: auto;
+                position: relative;
+            }
+
+            .content {
+                margin-left: 0;
+            }
+        }
+
+        /* Biểu đồ - Bóng đổ và hiệu ứng */
+        .chart-wrapper {
+            background: white;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 2px 4px 15px rgba(0, 0, 0, 0.1);
+            transition: all 0.3s ease-in-out;
+            margin-bottom: 20px;
+        }
+
+        .chart-wrapper:hover {
+            box-shadow: 4px 8px 25px rgba(0, 0, 0, 0.2);
+            transform: scale(1.01);
+        }
+    </style>
+</head>
+
+<body>
+<div th:replace="~{admin/navbar :: navbar}"></div>
+<div class="d-flex">
+    <div th:replace="~{admin/menu :: menu}"></div>
+
+    <main class="content w-100">
+        <div class="container">
+            
+    <h2>Thống kê đơn thuốc</h2>
+
+    <!-- Form lọc theo ngày -->
+    <form method="get" th:action="@{/hoadonDT}" class="mb-4">
+        <div class="row">
+            <!-- Input From Date -->
+            <div class="col-md-5 mb-3">
+                <label for="startDate" class="form-label">Từ ngày</label>
+                <input type="date" name="startDate" th:value="${startDate}" class="form-control" id="startDate" />
+            </div>
+    
+            <!-- Input To Date -->
+            <div class="col-md-5 mb-3">
+                <label for="endDate" class="form-label">Đến ngày</label>
+                <input type="date" name="endDate" th:value="${endDate}" class="form-control" id="endDate" />
+            </div>
+    
+            <!-- Submit Button -->
+            <div class="col-md-2 d-flex align-items-end mb-3">
+                <button type="submit" class="btn btn-primary w-100">Lọc</button>
+            </div>
+        </div>
+    </form>
+    
+
+    <!-- Tổng tiền -->
+    <p>
+      <strong>Tổng tiền:</strong> <span th:text="${totalAmount} + ' đ'">0</span>
+    </p>
+<!-- Biểu đồ đường -->
+<canvas id="invoiceChart" width="900" height="400"></canvas>
+    <!-- Bảng dữ liệu -->
+    <table border="1" cellpadding="8" cellspacing="0" class="table table-striped table-hover">
+      <thead>
+        <tr>
+          <th>Mã hóa đơn</th>
+          <th>Ngày thanh toán</th>
+          <th>Hình thức</th>
+          <th>Trạng thái</th>
+          <th>Tổng tiền</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr th:each="hd : ${hoaDons}">
+          <td th:text="${hd.maHoaDon}"></td>
+          <td th:text="${hd.ngayThanhToan}"></td>
+          <td th:text="${hd.hinhThuc}"></td>
+          <td th:text="${hd.trangThai}"></td>
+          <td th:text="${hd.tongTien}"></td>
+        </tr>
+      </tbody>
+    </table>
+
+    
+
+    <script th:inline="javascript">
+      /*<![CDATA[*/
+      let chartData = /*[[${dailyInvoiceCount}]]*/ [];
+
+      const labels = chartData.map((row) => row[0]);
+      const values = chartData.map((row) => row[1]);
+
+      const ctx = document.getElementById("invoiceChart").getContext("2d");
+      new Chart(ctx, {
+        type: "line",
+        data: {
+          labels: labels,
+          datasets: [
+            {
+              label: "Số lượng hóa đơn mỗi ngày",
+              data: values,
+              fill: false,
+              borderColor: "rgb(75, 192, 192)",
+              tension: 0.2,
+            },
+          ],
+        },
+        options: {
+          responsive: true,
+          scales: {
+            x: {
+              title: {
+                display: true,
+                text: "Ngày thanh toán",
+              },
+            },
+            y: {
+              beginAtZero: true,
+              title: {
+                display: true,
+                text: "Số lượng hóa đơn",
+              },
+            },
+          },
+        },
+      });
+      /*]]>*/
+    </script>
+    </main>
+</div>
+</body>
+</html>
+
+
